@@ -328,9 +328,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ for the WP Rocket development team
-- Inspired by modern VS Code extension design patterns
-- Thanks to all contributors and testers
+- Main Contributor (Gael R.)
 
 ## 📞 Support
 
