@@ -321,21 +321,5 @@ Contributions are welcome! Please:
 MIT License - see [LICENSE](LICENSE) file for details
 
 ## 👥 Authors
+** Gael R. **
 
-**WP Media Team**
-- Website: [wp-rocket.me](https://wp-rocket.me)
-- GitHub: [@wp-media](https://github.com/wp-media)
-
-## 🙏 Acknowledgments
-
-- Main Contributor (Gael R.)
-
-## 📞 Support
-
-- 📧 Email: support@wp-rocket.me
-- 🐛 Issues: [GitHub Issues](https://github.com/wp-media/wp-rocket-dev-tools/issues)
-- 📖 Documentation: [Wiki](https://github.com/wp-media/wp-rocket-dev-tools/wiki)
-
----
-
-**Made with 🚀 by WP Media**
