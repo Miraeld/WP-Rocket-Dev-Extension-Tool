@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Rocket Test Dashboard</title>
+    <link rel="stylesheet" href="{{cssUri}}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 WP Rocket Test Runner</h1>
+            <div class="header-info">
+                <div class="badge" id="branchBadge">main</div>
+                <div class="badge clickable" id="filesBadge" onclick="showChangedFiles()">0 changed files</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <div class="action-card" onclick="runTest('test-unit')">
+                <h3>🧪 Unit Tests</h3>
+                <div class="status">Last run: Never</div>
+            </div>
+            <div class="action-card" onclick="runTest('test-integration')">
+                <h3>⚡ Integration Tests</h3>
+                <div class="status">Last run: Never</div>
+            </div>
+            <div class="action-card" onclick="runQualityCheck()">
+                <h3>🎯 Quality Check</h3>
+                <div class="status">PHPCS + PHPStan</div>
+            </div>
+            <div class="action-card" onclick="runTest('run-tests')">
+                <h3>🚀 All Tests</h3>
+                <div class="status">Full test suite</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="testsToday">0</div>
+                <div class="stat-label">Tests Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgDuration">0s</div>
+                <div class="stat-label">Avg Duration</div>
+            </div>
+        </div>
+
+        <div class="output-panel" style="margin-top: 30px;">
+            <h3>
+                <span>Output</span>
+                <button onclick="clearOutput()">Clear</button>
+            </h3>
+            <div class="output-content" id="output">Ready to run tests...</div>
+        </div>
+
+        <div class="failures-panel" id="failuresPanel">
+            <h3>❌ Failed Tests <span id="failureCount" style="font-size: 14px; color: var(--text-secondary); font-weight: 400;"></span></h3>
+            <div id="failuresList"></div>
+        </div>
+
+        <div class="search-container" style="margin-top: 30px;">
+            <input type="text" class="search-box" id="testSearch" placeholder="🔍 Search tests..." oninput="filterTests()">
+        </div>
+
+        <div class="test-groups" id="testGroups">
+            <!-- Test groups will be populated here -->
+        </div>
+
+        <div class="history-sidebar" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 16px;">Recent Tests</h3>
+            <div id="historyList">No tests run yet</div>
+        </div>
+
+        <!-- Changed Files Modal -->
+        <div class="modal" id="filesModal" onclick="closeModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>📝 Changed Files</h3>
+                    <button class="close-button" onclick="closeModal()">&times;</button>
+                </div>
+                <ul class="file-list" id="fileList">
+                    <li class="file-item">No changes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{scriptUri}}"></script>
+</body>
+</html>

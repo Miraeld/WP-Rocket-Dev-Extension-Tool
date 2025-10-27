@@ -1,0 +1,4 @@
+tools:
+    - revive@1.7.0
+    - pylint@3.3.6
+0

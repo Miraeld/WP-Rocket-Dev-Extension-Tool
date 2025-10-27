@@ -1,0 +1,309 @@
+{
+  "name": "wp-rocket-dev-tools",
+  "displayName": "WP Rocket Dev Tools",
+  "description": "Comprehensive development toolkit for WP Rocket plugin development with test runner, code quality tools, and workflow automation",
+  "version": "1.0.0",
+  "publisher": "wp-media",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Testing",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "wp-rocket",
+    "wordpress",
+    "testing",
+    "phpunit",
+    "code-quality"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "wprocket.openDashboard",
+        "title": "Open Test Dashboard",
+        "category": "WP Rocket",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "wprocket.runUnitTests",
+        "title": "Run Unit Tests",
+        "category": "WP Rocket",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "wprocket.runIntegrationTests",
+        "title": "Run Integration Tests",
+        "category": "WP Rocket",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "wprocket.runQualityCheck",
+        "title": "Run Quality Check",
+        "category": "WP Rocket",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "wprocket.runAllTests",
+        "title": "Run All Tests",
+        "category": "WP Rocket",
+        "icon": "$(play)"
+      },
+      {
+        "command": "wprocket.stopRunningTest",
+        "title": "Stop Running Test",
+        "category": "WP Rocket",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "wprocket.generateServiceProvider",
+        "title": "Generate Service Provider",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.generateSubscriber",
+        "title": "Generate Subscriber",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.generateTest",
+        "title": "Generate Test File",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.generateMigration",
+        "title": "Generate Database Migration",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.goToTest",
+        "title": "Go to Test File / Source File",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.findService",
+        "title": "Find Service in Container",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.findHook",
+        "title": "Find Hook Usage",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.viewServiceProvider",
+        "title": "View Service Provider",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.runTestForFile",
+        "title": "Run Tests for This File",
+        "category": "WP Rocket"
+      },
+      {
+        "command": "wprocket.runQualityCheckForFile",
+        "title": "Run Quality Check on This File",
+        "category": "WP Rocket"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "wprocket.runUnitTests",
+        "key": "ctrl+shift+t u",
+        "mac": "cmd+shift+t u"
+      },
+      {
+        "command": "wprocket.runIntegrationTests",
+        "key": "ctrl+shift+t i",
+        "mac": "cmd+shift+t i"
+      },
+      {
+        "command": "wprocket.runQualityCheck",
+        "key": "ctrl+shift+t q",
+        "mac": "cmd+shift+t q"
+      },
+      {
+        "command": "wprocket.runAllTests",
+        "key": "ctrl+shift+t a",
+        "mac": "cmd+shift+t a"
+      },
+      {
+        "command": "wprocket.openDashboard",
+        "key": "ctrl+shift+t d",
+        "mac": "cmd+shift+t d"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "wprocket.runTestForFile",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@1"
+        },
+        {
+          "command": "wprocket.runQualityCheckForFile",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@2"
+        },
+        {
+          "command": "wprocket.generateTest",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@3"
+        },
+        {
+          "command": "wprocket.goToTest",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@4"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "wprocket.runTestForFile",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@1"
+        },
+        {
+          "command": "wprocket.runQualityCheckForFile",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@2"
+        },
+        {
+          "command": "wprocket.goToTest",
+          "when": "resourceExtname == .php",
+          "group": "wprocket@3"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "wprocket-sidebar",
+          "title": "WP Rocket",
+          "icon": "media/rocket.svg"
+        }
+      ]
+    },
+    "views": {
+      "wprocket-sidebar": [
+        {
+          "id": "wprocket-tests",
+          "name": "Test Explorer",
+          "icon": "$(beaker)"
+        },
+        {
+          "id": "wprocket-quality",
+          "name": "Code Quality",
+          "icon": "$(check-all)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "WP Rocket Dev Tools",
+      "properties": {
+        "wprocket.workspacePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to WP Rocket plugin directory (auto-detected)"
+        },
+        "wprocket.autoQualityCheck.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic quality checks on file save"
+        },
+        "wprocket.autoQualityCheck.files": {
+          "type": "array",
+          "default": [
+            "inc/Engine/**/*.php"
+          ],
+          "description": "File patterns to watch for auto quality checks"
+        },
+        "wprocket.autoQualityCheck.runPhpcs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run phpcs:fix on file save"
+        },
+        "wprocket.autoQualityCheck.runPhpstan": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run PHPStan on file save"
+        },
+        "wprocket.autoQualityCheck.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when quality checks complete"
+        },
+        "wprocket.testRunner.autoScroll": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scroll output to bottom during test runs"
+        },
+        "wprocket.testRunner.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when tests complete"
+        },
+        "wprocket.testRunner.showOutput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically show output panel when tests run"
+        },
+        "wprocket.testRunner.saveHistory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save test execution history"
+        },
+        "wprocket.testRunner.maxHistoryItems": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum number of test history items to keep"
+        },
+        "wprocket.theme": {
+          "type": "string",
+          "default": "dark",
+          "enum": [
+            "dark",
+            "light"
+          ],
+          "description": "Theme for the test dashboard"
+        }
+      }
+    },
+    "snippets": [
+      {
+        "language": "php",
+        "path": "./snippets/wprocket.code-snippets"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && npm run copy-assets",
+    "watch": "tsc -watch -p ./ & npm run watch-assets",
+    "copy-assets": "mkdir -p out/webview && cp src/webview/dashboard.html src/webview/dashboard.css src/webview/dashboard.js out/webview/",
+    "watch-assets": "chokidar 'src/webview/*.{html,css,js}' -c 'npm run copy-assets'",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.19.0"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wp-media/wp-rocket-dev-tools"
+  },
+  "license": "MIT"
+}
