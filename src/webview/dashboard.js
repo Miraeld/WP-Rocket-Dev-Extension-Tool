@@ -6,7 +6,7 @@ let ignoredTests = JSON.parse(localStorage.getItem('wprocket-ignored-tests') || 
 
 function parseAnsi(text) {
     // Convert ANSI codes to HTML
-    const ansiRegex = /\x1b\[(\d+)m/g;
+    const ansiRegex = /\x1b\[(\d+(?:;\d+)*)m/g;
     let html = text;
     
     // Escape HTML
@@ -19,6 +19,7 @@ function parseAnsi(text) {
         '2': 'ansi-dim',
         '3': 'ansi-italic',
         '4': 'ansi-underline',
+        '7': 'ansi-inverse',
         '30': 'ansi-black',
         '31': 'ansi-red',
         '32': 'ansi-green',
@@ -27,6 +28,7 @@ function parseAnsi(text) {
         '35': 'ansi-magenta',
         '36': 'ansi-cyan',
         '37': 'ansi-white',
+        '41': 'ansi-bg-red',
         '90': 'ansi-bright-black',
         '91': 'ansi-bright-red',
         '92': 'ansi-bright-green',
@@ -38,18 +40,23 @@ function parseAnsi(text) {
     };
     
     let openTags = [];
-    html = html.replace(ansiRegex, (match, code) => {
-        if (code === '0') {
+    html = html.replace(ansiRegex, (match, codes) => {
+        const codeList = codes.split(';');
+        if (codeList.includes('0')) {
             const closing = openTags.map(() => '</span>').join('');
             openTags = [];
             return closing;
         }
-        const cssClass = colorMap[code];
-        if (cssClass) {
-            openTags.push(cssClass);
-            return '<span class="' + cssClass + '">';
+        
+        let result = '';
+        for (const code of codeList) {
+            const cssClass = colorMap[code];
+            if (cssClass) {
+                openTags.push(cssClass);
+                result += '<span class="' + cssClass + '">';
+            }
         }
-        return '';
+        return result;
     });
     
     // Close any remaining tags
@@ -61,9 +68,13 @@ function parseAnsi(text) {
 function parseTestFailures(output) {
     const failures = [];
     
-    // PHPUnit failure pattern
+    // Only parse the "There were X failures:" section
+    const failureSection = output.match(/There were \d+ failures?:([\s\S]*?)(?=\n\n(?:There were|FAILURES!|$))/i);
+    if (!failureSection) return failures;
+    
+    // PHPUnit failure pattern within that section only
     const failureRegex = /^\d+\)\s+(.+?)$/gm;
-    const matches = output.matchAll(failureRegex);
+    const matches = failureSection[1].matchAll(failureRegex);
     
     for (const match of matches) {
         const testName = match[1];

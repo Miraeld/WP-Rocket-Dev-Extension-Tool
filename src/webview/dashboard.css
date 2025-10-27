@@ -500,6 +500,8 @@ body {
 .ansi-dim { opacity: 0.6; }
 .ansi-italic { font-style: italic; }
 .ansi-underline { text-decoration: underline; }
+.ansi-inverse { background-color: #ffffff; color: #000000; }
+.ansi-bg-red { background-color: #ef2929; color: #ffffff; }
 
 .stats-grid {
     display: grid;
