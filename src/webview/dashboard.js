@@ -72,38 +72,61 @@ function parseTestFailures(output) {
     const failureSection = output.match(/There were \d+ failures?:([\s\S]*?)(?=\n\n(?:There were|FAILURES!|$))/i);
     if (!failureSection) return failures;
     
-    // PHPUnit failure pattern within that section only
-    const failureRegex = /^\d+\)\s+(.+?)$/gm;
-    const matches = failureSection[1].matchAll(failureRegex);
+    // Split by failure numbers to get each complete failure block
+    const failureBlocks = failureSection[1].split(/\n(?=\d+\))/);
     
-    for (const match of matches) {
-        const testName = match[1];
-        const startIdx = match.index;
+    for (const block of failureBlocks) {
+        if (!block.trim()) continue;
         
-        // Find the failure message and stack trace
-        let endIdx = output.indexOf('\n\n', startIdx + match[0].length);
-        if (endIdx === -1) endIdx = output.length;
+        const lines = block.split('\n');
+        const headerMatch = lines[0].match(/^(\d+)\)\s+(.+?)$/);
+        if (!headerMatch) continue;
         
-        const failureBlock = output.substring(startIdx, endIdx);
-        const lines = failureBlock.split('\n');
-        
+        const testName = headerMatch[2];
         let message = '';
+        let expected = '';
+        let actual = '';
         let stack = '';
-        let inStack = false;
+        let inExpected = false;
+        let inActual = false;
         
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i];
-            if (line.includes('Failed asserting') || line.includes('Error:')) {
+            
+            if (line.includes('Failed asserting')) {
                 message = line.trim();
-                inStack = true;
-            } else if (inStack) {
+                inExpected = false;
+                inActual = false;
+            } else if (line.includes('--- Expected')) {
+                inExpected = true;
+                inActual = false;
+            } else if (line.includes('+++ Actual')) {
+                inExpected = false;
+                inActual = true;
+            } else if (line.match(/^\//) && !inExpected && !inActual) {
+                // Stack trace line (file path) - only if not in diff
                 stack += line + '\n';
+            } else if (inExpected) {
+                // Collecting expected output
+                expected += line + '\n';
+            } else if (inActual) {
+                // Collecting actual output - stop at file path or empty line followed by capital letter
+                if (line.match(/^\//) || (line.trim() === '' && i + 1 < lines.length && lines[i + 1].match(/^[A-Z\/]/))) {
+                    inActual = false;
+                    if (line.match(/^\//)) {
+                        stack += line + '\n';
+                    }
+                } else {
+                    actual += line + '\n';
+                }
             }
         }
         
         failures.push({
             name: testName,
             message: message || 'Test failed',
+            expected: expected.trim(),
+            actual: actual.trim(),
             stack: stack.trim()
         });
     }
@@ -141,6 +164,7 @@ function displayFailures(failures) {
             '</div>' +
             '<div class="failure-message">' + failure.message + '</div>' +
             (failure.stack ? '<div class="failure-stack">' + failure.stack + '</div>' : '') +
+            (failure.actual ? '<div class="failure-diff"><div class="diff-label">Differences:</div><div class="diff-content">' + failure.actual + '</div></div>' : '') +
             '</div></div></div>';
     }).join('');
 }
@@ -384,7 +408,9 @@ window.addEventListener('message', event => {
             break;
         case 'testStarted':
             currentTestOutput = 'Running tests...\n';
-            document.getElementById('output').innerHTML = parseAnsi(currentTestOutput);
+            const outputStart = document.getElementById('output');
+            outputStart.innerHTML = parseAnsi(currentTestOutput);
+            outputStart.scrollTop = outputStart.scrollHeight;
             document.getElementById('failuresPanel').classList.remove('visible');
             break;
         case 'testOutput':
@@ -398,6 +424,7 @@ window.addEventListener('message', event => {
             const outputEl = document.getElementById('output');
             currentTestOutput += '\n' + status;
             outputEl.innerHTML = parseAnsi(currentTestOutput);
+            outputEl.scrollTop = outputEl.scrollHeight;
             
             // Parse and display failures if test failed
             if (!message.data.success) {

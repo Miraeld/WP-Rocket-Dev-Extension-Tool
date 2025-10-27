@@ -5,11 +5,44 @@ export class CodeQualityViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'wprocket-quality';
 
     private _view?: vscode.WebviewView;
+    private messageQueue: Array<{type: string, data?: any, success?: boolean}> = [];
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private readonly qualityCheck: QualityCheck
     ) {}
+
+    public sendOutput(data: string): void {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'output',
+                data: data
+            });
+        } else {
+            this.messageQueue.push({ type: 'output', data });
+        }
+    }
+
+    public sendStarted(): void {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'started'
+            });
+        } else {
+            this.messageQueue.push({ type: 'started' });
+        }
+    }
+
+    public sendCompleted(success: boolean): void {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'completed',
+                success: success
+            });
+        } else {
+            this.messageQueue.push({ type: 'completed', success });
+        }
+    }
 
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
@@ -25,14 +58,42 @@ export class CodeQualityViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+        // Flush any queued messages
+        this.flushMessageQueue();
+
         // Handle messages from the webview
         webviewView.webview.onDidReceiveMessage(async data => {
             switch (data.type) {
                 case 'runFull':
                     await this.qualityCheck.runFullCheck();
                     break;
+                case 'runPhpcs':
+                    await this.qualityCheck.runPhpcsOnly();
+                    break;
+                case 'runPhpstan':
+                    await this.qualityCheck.runPhpstanOnly();
+                    break;
             }
         });
+    }
+
+    private flushMessageQueue(): void {
+        while (this.messageQueue.length > 0 && this._view) {
+            const message = this.messageQueue.shift();
+            if (message) {
+                if (message.type === 'output') {
+                    this._view.webview.postMessage({ type: 'output', data: message.data });
+                } else if (message.type === 'started') {
+                    this._view.webview.postMessage({ type: 'started' });
+                } else if (message.type === 'completed') {
+                    this._view.webview.postMessage({ type: 'completed', success: message.success });
+                }
+            }
+        }
+    }
+
+    public async showView(): Promise<void> {
+        await vscode.commands.executeCommand('wprocket-quality.focus');
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
@@ -107,6 +168,27 @@ export class CodeQualityViewProvider implements vscode.WebviewViewProvider {
                 .info-item strong {
                     color: var(--vscode-foreground);
                 }
+                .output-container {
+                    padding: 10px;
+                }
+                .output-container h4 {
+                    margin: 0 0 8px 0;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                .output {
+                    background: var(--vscode-editor-background);
+                    border: 1px solid var(--vscode-panel-border);
+                    border-radius: 2px;
+                    padding: 10px;
+                    font-family: var(--vscode-editor-font-family);
+                    font-size: 11px;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    line-height: 1.5;
+                }
             </style>
         </head>
         <body>
@@ -144,13 +226,45 @@ export class CodeQualityViewProvider implements vscode.WebviewViewProvider {
                     <strong>View results:</strong> Check the Problems panel for detailed diagnostics.
                 </div>
             </div>
+            <div class="output-container">
+                <h4>Output</h4>
+                <div id="output" class="output"></div>
+            </div>
 
             <script>
                 const vscode = acquireVsCodeApi();
 
                 function runCheck(type) {
-                    vscode.postMessage({ type: 'runFull' });
+                    if (type === 'full') {
+                        vscode.postMessage({ type: 'runFull' });
+                    } else if (type === 'phpcs') {
+                        vscode.postMessage({ type: 'runPhpcs' });
+                    } else if (type === 'phpstan') {
+                        vscode.postMessage({ type: 'runPhpstan' });
+                    }
                 }
+
+                window.addEventListener('message', event => {
+                    const message = event.data;
+                    const output = document.getElementById('output');
+                    console.log('CodeQualityView received message:', message.type);
+
+                    switch (message.type) {
+                        case 'started':
+                            output.textContent = 'Running quality check...\\n';
+                            output.scrollTop = output.scrollHeight;
+                            break;
+                        case 'output':
+                            output.textContent += message.data;
+                            output.scrollTop = output.scrollHeight;
+                            break;
+                        case 'completed':
+                            const status = message.success ? '\n✅ Check completed' : '\n❌ Check found issues';
+                            output.textContent += status;
+                            output.scrollTop = output.scrollHeight;
+                            break;
+                    }
+                });
             </script>
         </body>
         </html>`;

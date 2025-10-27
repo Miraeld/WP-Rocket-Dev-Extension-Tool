@@ -35,6 +35,25 @@ export class TestDashboardProvider implements vscode.WebviewViewProvider {
                 data: { output } 
             });
         });
+
+        // Listen to quality check events
+        this.qualityCheck.onQualityStart(() => {
+            this.sendMessage({ type: 'testStarted', data: {} });
+        });
+
+        this.qualityCheck.onQualityComplete((success: boolean) => {
+            this.sendMessage({ 
+                type: 'testCompleted', 
+                data: { success } 
+            });
+        });
+
+        this.qualityCheck.onQualityOutput((output: string) => {
+            this.sendMessage({ 
+                type: 'testOutput', 
+                data: { output } 
+            });
+        });
     }
 
     public resolveWebviewView(

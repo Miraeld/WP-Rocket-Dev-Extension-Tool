@@ -36,6 +36,9 @@ export function activate(context: vscode.ExtensionContext) {
     testExplorerView = new TestExplorerViewProvider(context.extensionUri, testRunner);
     codeQualityView = new CodeQualityViewProvider(context.extensionUri, qualityCheck);
     
+    // Wire up quality check to view provider
+    qualityCheck.setViewProvider(codeQualityView);
+    
     // Register webview providers
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
