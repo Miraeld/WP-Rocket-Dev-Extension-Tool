@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { TestDashboardProvider } from './webview/TestDashboard';
-import { TestExplorerViewProvider } from './webview/TestExplorerView';
-import { CodeQualityViewProvider } from './webview/CodeQualityView';
+import { WelcomeViewProvider } from './webview/WelcomeView';
 import { TestRunner } from './testRunner';
 import { QualityCheck } from './qualityCheck';
 import { FileWatcher } from './fileWatcher';
@@ -10,8 +9,7 @@ import { Navigation } from './navigation';
 import { GitUtils } from './utils/git';
 
 let testDashboard: TestDashboardProvider;
-let testExplorerView: TestExplorerViewProvider;
-let codeQualityView: CodeQualityViewProvider;
+let welcomeView: WelcomeViewProvider;
 let testRunner: TestRunner;
 let qualityCheck: QualityCheck;
 let fileWatcher: FileWatcher;
@@ -20,7 +18,8 @@ let navigation: Navigation;
 let statusBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('WP Rocket Dev Tools is now active');
+    console.log('WP Rocket Dev Tools: activate() called');
+    vscode.window.showInformationMessage('WP Rocket: Extension activated');
 
     // Initialize core services
     testRunner = new TestRunner(context);
@@ -29,30 +28,31 @@ export function activate(context: vscode.ExtensionContext) {
     codeGenerator = new CodeGenerator(context);
     navigation = new Navigation(context);
     
+    console.log('WP Rocket Dev Tools: Core services initialized');
+    
     // Initialize WebView dashboard
     testDashboard = new TestDashboardProvider(context.extensionUri, testRunner, qualityCheck);
     
-    // Initialize sidebar views
-    testExplorerView = new TestExplorerViewProvider(context.extensionUri, testRunner);
-    codeQualityView = new CodeQualityViewProvider(context.extensionUri, qualityCheck);
+    console.log('WP Rocket Dev Tools: Dashboard provider created');
     
-    // Wire up quality check to view provider
-    qualityCheck.setViewProvider(codeQualityView);
+    // Initialize welcome view
+    welcomeView = new WelcomeViewProvider(context.extensionUri);
     
-    // Register webview providers
+    console.log('WP Rocket Dev Tools: Welcome view created');
+    
+    // Register welcome view
+    console.log('WP Rocket Dev Tools: Registering welcome view provider with viewType:', WelcomeViewProvider.viewType);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
-            TestExplorerViewProvider.viewType,
-            testExplorerView
+            WelcomeViewProvider.viewType,
+            welcomeView
         )
     );
     
-    context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(
-            CodeQualityViewProvider.viewType,
-            codeQualityView
-        )
-    );
+    console.log('WP Rocket Dev Tools: Welcome view registered');
+    vscode.window.showInformationMessage('WP Rocket: Welcome view registered');
+    
+    console.log('WP Rocket Dev Tools: Welcome view registered with type:', WelcomeViewProvider.viewType);
 
     // Register dashboard command
     context.subscriptions.push(

@@ -190,14 +190,10 @@
     "views": {
       "wprocket-sidebar": [
         {
-          "id": "wprocket-tests",
-          "name": "Test Explorer",
-          "icon": "$(beaker)"
-        },
-        {
-          "id": "wprocket-quality",
-          "name": "Code Quality",
-          "icon": "$(check-all)"
+          "type": "webview",
+          "id": "wprocket-welcome",
+          "name": "Dashboard",
+          "icon": "$(rocket)"
         }
       ]
     },
@@ -283,7 +279,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run copy-assets",
     "watch": "tsc -watch -p ./ & npm run watch-assets",
-    "copy-assets": "mkdir -p out/webview && cp src/webview/dashboard.html src/webview/dashboard.css src/webview/dashboard.js out/webview/",
+    "copy-assets": "mkdir -p out/webview && cp src/webview/dashboard.html src/webview/dashboard.css src/webview/dashboard.js out/webview/ && mkdir -p out/media && cp media/rocket.svg media/icon.png out/media/",
     "watch-assets": "chokidar 'src/webview/*.{html,css,js}' -c 'npm run copy-assets'",
     "pretest": "npm run compile",
     "lint": "eslint src --ext ts",

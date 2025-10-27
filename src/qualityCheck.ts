@@ -8,7 +8,6 @@ const execAsync = promisify(exec);
 export class QualityCheck {
     private outputChannel: vscode.OutputChannel;
     private diagnosticsCollection: vscode.DiagnosticCollection;
-    private viewProvider?: any;
     private qualityStartListeners: Array<() => void> = [];
     private qualityCompleteListeners: Array<(success: boolean) => void> = [];
     private qualityOutputListeners: Array<(output: string) => void> = [];
@@ -17,10 +16,6 @@ export class QualityCheck {
         this.outputChannel = vscode.window.createOutputChannel('WP Rocket Quality Check');
         this.diagnosticsCollection = vscode.languages.createDiagnosticCollection('wprocket');
         context.subscriptions.push(this.diagnosticsCollection);
-    }
-
-    public setViewProvider(viewProvider: any): void {
-        this.viewProvider = viewProvider;
     }
 
     public onQualityStart(listener: () => void): void {
@@ -42,12 +37,8 @@ export class QualityCheck {
             return false;
         }
 
-        // Show the Code Quality view
-        await this.viewProvider?.showView();
-
         // Emit start event
         this.qualityStartListeners.forEach(listener => listener());
-        this.viewProvider?.sendStarted();
         this.outputChannel.clear();
         const config = vscode.workspace.getConfiguration('wprocket');
         const showOutput = config.get<boolean>('dashboard.showOutput', false);
@@ -110,18 +101,14 @@ export class QualityCheck {
             return false;
         }
 
-        // Show the Code Quality view
-        await this.viewProvider?.showView();
-
-        this.viewProvider?.sendStarted();
         this.outputChannel.clear();
         
         const header = '📝 Running PHPCS Fixer...\n' + '='.repeat(80) + '\n';
         this.outputChannel.appendLine(header);
-        this.viewProvider?.sendOutput(header);
+        this.emitOutput(header);
 
         const success = await this.runPhpcs(workspacePath);
-        this.viewProvider?.sendCompleted(success);
+        this.emitComplete(success);
 
         return success;
     }
@@ -133,30 +120,24 @@ export class QualityCheck {
             return false;
         }
 
-        // Show the Code Quality view
-        await this.viewProvider?.showView();
-
-        this.viewProvider?.sendStarted();
         this.outputChannel.clear();
         
         const header = '🔍 Running PHPStan...\n' + '='.repeat(80) + '\n';
         this.outputChannel.appendLine(header);
-        this.viewProvider?.sendOutput(header);
+        this.emitOutput(header);
 
         const success = await this.runPhpstan(workspacePath);
-        this.viewProvider?.sendCompleted(success);
+        this.emitComplete(success);
 
         return success;
     }
 
     private emitOutput(output: string): void {
         this.qualityOutputListeners.forEach(listener => listener(output));
-        this.viewProvider?.sendOutput(output);
     }
 
     private emitComplete(success: boolean): void {
         this.qualityCompleteListeners.forEach(listener => listener(success));
-        this.viewProvider?.sendCompleted(success);
     }
 
     public async runCheckForFile(uri: vscode.Uri): Promise<boolean> {
